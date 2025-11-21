@@ -39,7 +39,10 @@ class PredictionService:
         
         self.scripts_dir = self.project_root / "scripts"
         self.results_dir = self.project_root / "results"
-        self.python_exe = self.project_root / "env" / "Scripts" / "python.exe"
+        
+        # En Docker usa python directamente, en desarrollo usa el venv
+        import sys
+        self.python_exe = sys.executable
         
         # Crear directorio de resultados si no existe
         self.results_dir.mkdir(parents=True, exist_ok=True)
