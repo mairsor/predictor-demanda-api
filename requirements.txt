@@ -1,0 +1,51 @@
+# Dependencias necesarias para el modelo de predicción de demanda
+# Proyecto: Predicción de Demanda de Cursos (UNI)
+# Última actualización: 2025-11-19
+
+# ========================================
+# Librerías core de ML y data science
+# ========================================
+numpy>=1.24.0               # arrays numéricos y operaciones matemáticas
+pandas>=1.5.0               # manipulación y análisis de datos
+scikit-learn>=1.2.0         # algoritmos de machine learning (RandomForest)
+imbalanced-learn>=0.10.0    # técnicas para datos desbalanceados
+
+# ========================================
+# Serialización y configuración
+# ========================================
+joblib>=1.2.0               # serialización de modelos .pkl
+pyyaml>=6.0.0               # lectura de archivos de configuración YAML
+
+# ========================================
+# Validación de datos
+# ========================================
+pydantic>=2.0.0             # validación de datos con type hints
+
+# ========================================
+# Base de datos (para conexión futura)
+# ========================================
+sqlalchemy>=1.4.0           # ORM para bases de datos
+psycopg2-binary>=2.9.0      # driver PostgreSQL
+
+# ========================================
+# Testing
+# ========================================
+pytest>=7.0.0               # framework de testing
+pytest-cov>=4.0.0           # cobertura de tests
+
+# ========================================
+# API REST
+# ========================================
+fastapi>=0.104.0            # framework web moderno para crear APIs REST
+uvicorn[standard]>=0.24.0   # servidor ASGI para ejecutar FastAPI
+python-multipart>=0.0.6     # soporte para form data y file uploads
+
+# ========================================
+# Utilidades
+# ========================================
+python-dotenv>=1.0.0        # lectura de variables de entorno desde .env
+
+# ========================================
+# CLI (opcional pero recomendado)
+# ========================================
+# typer>=0.9.0              # descomenta para CLI interactivo avanzado

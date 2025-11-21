@@ -1,0 +1,40 @@
+# Configuración del Modelo Específico para CIB02
+# Este modelo se entrena solo con datos del curso CIB02
+
+# Features a utilizar en el modelo
+features:
+  - creditos
+  - alumnos_previos
+  - variacion_matricula
+  - num_prerrequisitos
+  - tasa_aprobacion
+  - franja_horaria
+  - alumnos_elegibles
+  - cupo_maximo
+  - profesor_popularidad 
+
+# Hiperparámetros del RandomForestRegressor
+# Ajustados para un curso específico (puede requerir menos árboles)
+hyperparams:
+  n_estimators: 200
+  max_depth: 10
+  min_samples_split: 2
+  min_samples_leaf: 1
+  random_state: 42
+  n_jobs: -1
+
+# Variable objetivo a predecir
+target: alumnos_matriculados
+
+# Proporción de datos para test
+test_size: 0.2
+
+# Mínimo de semestres de historia requeridos para entrenar
+# Si hay menos registros, se recomienda usar el modelo general
+min_history_semesters: 6
+
+# Directorio de salida para modelos
+output_dir: models/
+
+# Logging
+verbose: true

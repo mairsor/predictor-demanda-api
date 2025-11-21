@@ -1,0 +1,39 @@
+# docker-compose.yml - Orquestación de contenedores
+# Proyecto: Predicción de Demanda de Cursos (UNI)
+# Última actualización: 2025-11-20
+
+version: '3.8'
+
+services:
+  # Servicio principal de la API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: predictor_demanda_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Montar directorios para persistencia de datos
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./results:/app/results
+      - ./configs:/app/configs
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      # Variables de base de datos (conectar a PostgreSQL del host)
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-uni_db}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
