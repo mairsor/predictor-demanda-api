@@ -5,7 +5,7 @@ Define los modelos Pydantic para validación de requests/responses.
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict
 from datetime import datetime
 
 
@@ -72,12 +72,32 @@ class CoursePrediction(BaseModel):
     """Predicción para un curso específico."""
     
     codigo_curso: str
-    n_registros_historia: int
-    cupo_maximo_promedio: float
-    alumnos_previos_promedio: float
-    prediccion_demanda: float
-    mae_si_disponible: Optional[float]
+    nombre_curso: Optional[str] = None  # Para compatibilidad con frontend
+    n_registros_historia: Optional[int] = None
+    cupo_maximo_promedio: Optional[float] = None
+    alumnos_previos_promedio: Optional[float] = None
+    prediccion_demanda: float  # Ahora llamado demanda_predicha en frontend
+    demanda_predicha: Optional[float] = None  # Alias para frontend
+    mae_si_disponible: Optional[float] = None
+    confianza: Optional[float] = None  # Para frontend
     modelo_usado: str
+    
+    def __init__(self, **data):
+        # Si viene prediccion_demanda, copiar a demanda_predicha
+        if 'prediccion_demanda' in data and 'demanda_predicha' not in data:
+            data['demanda_predicha'] = data['prediccion_demanda']
+        # Si viene demanda_predicha, copiar a prediccion_demanda
+        if 'demanda_predicha' in data and 'prediccion_demanda' not in data:
+            data['prediccion_demanda'] = data['demanda_predicha']
+        super().__init__(**data)
+
+
+class PredictionMetadata(BaseModel):
+    """Metadata de la predicción."""
+    timestamp: str
+    execution_time_seconds: float
+    model_type: str
+    scope: str
 
 
 class PredictionResponse(BaseModel):
@@ -85,12 +105,10 @@ class PredictionResponse(BaseModel):
     
     success: bool = True
     message: str
-    file_path: str
-    timestamp: str
-    scope: str
-    model_type: str
+    output_file: str  # Nombre del archivo, no ruta completa
     courses_processed: int
     predictions: List[CoursePrediction]
+    metadata: PredictionMetadata
     
     class Config:
         schema_extra = {
@@ -123,10 +141,11 @@ class ResultFileInfo(BaseModel):
     """Información de un archivo de resultados."""
     
     filename: str
-    filepath: str
     size_bytes: int
-    created_at: str
-    courses_count: int
+    size_human: str
+    created_date: str
+    modified_date: str
+    rows: int
 
 
 class ResultsListResponse(BaseModel):
@@ -134,7 +153,9 @@ class ResultsListResponse(BaseModel):
     
     success: bool = True
     count: int
-    results: List[ResultFileInfo]
+    files: List[ResultFileInfo]
+    total_size_bytes: int
+    total_size_human: str
 
 
 class DeleteResultRequest(BaseModel):
@@ -160,12 +181,12 @@ class ModelFileInfo(BaseModel):
     """Información de un archivo de modelo entrenado."""
     
     filename: str
-    filepath: str
-    size_bytes: int
-    created_at: str
-    model_type: str  # "general" o "especifico"
+    type: str  # "general" o "specific"
     course_code: Optional[str] = None  # Solo para modelos específicos
-    has_metadata: bool
+    size_bytes: int
+    size_human: str
+    created_date: str
+    modified_date: str
 
 
 class ModelsListResponse(BaseModel):
@@ -174,6 +195,9 @@ class ModelsListResponse(BaseModel):
     success: bool = True
     count: int
     models: List[ModelFileInfo]
+    breakdown: Dict[str, int]
+    total_size_bytes: int
+    total_size_human: str
 
 
 class DeleteModelRequest(BaseModel):

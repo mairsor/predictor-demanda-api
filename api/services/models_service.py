@@ -57,40 +57,63 @@ class ModelsService:
                     model_type = "general"
                     course_code = None
                 else:
-                    model_type = "especifico"
+                    model_type = "specific"
                     # Extraer código del curso del nombre
                     # Formato: modelo_demanda_CIB02_v20251113
                     parts = filename.split("_")
                     if len(parts) >= 3:
                         course_code = parts[2]
                     else:
-                        course_code = "Unknown"
-                
-                # Verificar si tiene metadata
-                json_file = pkl_file.with_suffix(".json")
-                has_metadata = json_file.exists()
+                        course_code = None
                 
                 # Obtener info del archivo
                 stat = pkl_file.stat()
-                created_at = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                created_date = datetime.fromtimestamp(stat.st_ctime).strftime("%Y-%m-%d %H:%M:%S")
+                modified_date = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Formatear tamaño
+                size_bytes = stat.st_size
+                if size_bytes < 1024:
+                    size_human = f"{size_bytes} B"
+                elif size_bytes < 1024 * 1024:
+                    size_human = f"{size_bytes / 1024:.2f} KB"
+                else:
+                    size_human = f"{size_bytes / 1024 / 1024:.2f} MB"
                 
                 model_files.append(ModelFileInfo(
                     filename=pkl_file.name,
-                    filepath=str(pkl_file.relative_to(self.project_root)),
-                    size_bytes=stat.st_size,
-                    created_at=created_at,
-                    model_type=model_type,
+                    type=model_type,
                     course_code=course_code,
-                    has_metadata=has_metadata
+                    size_bytes=size_bytes,
+                    size_human=size_human,
+                    created_date=created_date,
+                    modified_date=modified_date
                 ))
             except Exception as e:
                 logger.warning(f"Error procesando {pkl_file.name}: {str(e)}")
                 continue
         
+        # Calcular breakdown y totales
+        breakdown = {
+            "general": sum(1 for m in model_files if m.type == "general"),
+            "specific": sum(1 for m in model_files if m.type == "specific")
+        }
+        
+        total_bytes = sum(m.size_bytes for m in model_files)
+        if total_bytes < 1024:
+            total_size_human = f"{total_bytes} B"
+        elif total_bytes < 1024 * 1024:
+            total_size_human = f"{total_bytes / 1024:.2f} KB"
+        else:
+            total_size_human = f"{total_bytes / 1024 / 1024:.2f} MB"
+        
         return ModelsListResponse(
             success=True,
             count=len(model_files),
-            models=model_files
+            models=model_files,
+            breakdown=breakdown,
+            total_size_bytes=total_bytes,
+            total_size_human=total_size_human
         )
     
     def delete_model(self, filename: str, delete_metadata: bool = True) -> DeleteResponse:

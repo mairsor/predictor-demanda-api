@@ -5,6 +5,7 @@ Endpoints CRUD para archivos CSV de predicciones.
 """
 
 from fastapi import APIRouter, HTTPException, status, Query
+from fastapi.responses import FileResponse
 from typing import Dict, Any
 import logging
 
@@ -87,6 +88,49 @@ async def get_result_content(filename: str) -> Dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error obteniendo contenido: {str(e)}"
+        )
+
+
+@router.get(
+    "/{filename}/download",
+    response_class=FileResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Descargar archivo de resultados",
+    description="Descarga un archivo CSV de resultados específico"
+)
+async def download_result(filename: str):
+    """
+    Descarga un archivo de resultados.
+    
+    Args:
+        filename: Nombre del archivo a descargar
+        
+    Returns:
+        Archivo CSV para descarga
+    """
+    try:
+        logger.info(f"GET /results/{filename}/download - Descargando archivo")
+        file_path = results_service.results_dir / filename
+        
+        if not file_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Archivo no encontrado: {filename}"
+            )
+        
+        return FileResponse(
+            path=str(file_path),
+            media_type="text/csv",
+            filename=filename
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error descargando archivo: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error descargando archivo: {str(e)}"
         )
 
 

@@ -52,27 +52,49 @@ class ResultsService:
             try:
                 # Leer metadata del CSV
                 df = pd.read_csv(csv_file)
-                courses_count = len(df)
+                rows = len(df)
                 
                 # Obtener info del archivo
                 stat = csv_file.stat()
-                created_at = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                created_date = datetime.fromtimestamp(stat.st_ctime).strftime("%Y-%m-%d %H:%M:%S")
+                modified_date = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Formatear tamaño
+                size_bytes = stat.st_size
+                if size_bytes < 1024:
+                    size_human = f"{size_bytes} B"
+                elif size_bytes < 1024 * 1024:
+                    size_human = f"{size_bytes / 1024:.2f} KB"
+                else:
+                    size_human = f"{size_bytes / 1024 / 1024:.2f} MB"
                 
                 result_files.append(ResultFileInfo(
                     filename=csv_file.name,
-                    filepath=str(csv_file.relative_to(self.project_root)),
-                    size_bytes=stat.st_size,
-                    created_at=created_at,
-                    courses_count=courses_count
+                    size_bytes=size_bytes,
+                    size_human=size_human,
+                    created_date=created_date,
+                    modified_date=modified_date,
+                    rows=rows
                 ))
             except Exception as e:
                 logger.warning(f"Error leyendo {csv_file.name}: {str(e)}")
                 continue
         
+        # Calcular totales
+        total_bytes = sum(f.size_bytes for f in result_files)
+        if total_bytes < 1024:
+            total_size_human = f"{total_bytes} B"
+        elif total_bytes < 1024 * 1024:
+            total_size_human = f"{total_bytes / 1024:.2f} KB"
+        else:
+            total_size_human = f"{total_bytes / 1024 / 1024:.2f} MB"
+        
         return ResultsListResponse(
             success=True,
             count=len(result_files),
-            results=result_files
+            files=result_files,
+            total_size_bytes=total_bytes,
+            total_size_human=total_size_human
         )
     
     def delete_result(self, filename: str) -> DeleteResponse:
@@ -163,10 +185,30 @@ class ResultsService:
         
         try:
             df = pd.read_csv(file_path)
+            
+            # Transformar datos al formato esperado por el frontend
+            data = []
+            for _, row in df.iterrows():
+                prediction = {
+                    "codigo_curso": row.get("codigo_curso", ""),
+                    "nombre_curso": f"Curso {row.get('codigo_curso', 'N/A')}",  # Nombre por defecto
+                    "demanda_predicha": int(round(row.get("prediccion_demanda", 0))),
+                    "prediccion_demanda": row.get("prediccion_demanda", 0),
+                    "modelo_usado": row.get("modelo_usado", "N/A"),
+                    "n_registros_historia": row.get("n_registros_historia"),
+                    "cupo_maximo_promedio": row.get("cupo_maximo_promedio"),
+                    "alumnos_previos_promedio": row.get("alumnos_previos_promedio"),
+                    "mae_si_disponible": row.get("mae_si_disponible"),
+                    "confianza": None
+                }
+                data.append(prediction)
+            
             return {
+                "success": True,
                 "filename": filename,
-                "courses_count": len(df),
-                "data": df.to_dict(orient="records")
+                "rows": len(df),
+                "columns": df.columns.tolist(),
+                "data": data
             }
         except Exception as e:
             raise RuntimeError(f"Error leyendo archivo: {str(e)}")

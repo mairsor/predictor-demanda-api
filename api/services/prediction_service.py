@@ -62,6 +62,8 @@ class PredictionService:
         """
         logger.info(f"Iniciando predicción: scope={request.scope}, model_type={request.model_type}")
         
+        start_time = datetime.now()
+        
         # Ejecutar predicción según scope
         if request.scope == "single":
             result_file = self._predict_single(request.course_code, request.model_type)
@@ -70,19 +72,27 @@ class PredictionService:
         else:  # all
             result_file = self._predict_all(request.model_type)
         
+        execution_time = (datetime.now() - start_time).total_seconds()
+        
         # Leer resultados del CSV generado
         predictions = self._read_predictions(result_file)
+        
+        # Importar PredictionMetadata
+        from api.schemas.prediction_schemas import PredictionMetadata
         
         # Construir response
         return PredictionResponse(
             success=True,
             message="Predicción completada exitosamente",
-            file_path=str(result_file.relative_to(self.project_root)),
-            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            scope=request.scope,
-            model_type=request.model_type,
+            output_file=result_file.name,  # Solo nombre del archivo
             courses_processed=len(predictions),
-            predictions=predictions
+            predictions=predictions,
+            metadata=PredictionMetadata(
+                timestamp=datetime.now().isoformat(),
+                execution_time_seconds=execution_time,
+                model_type=request.model_type,
+                scope=request.scope
+            )
         )
     
     def _predict_single(self, course_code: str, model_type: str) -> Path:
@@ -151,6 +161,10 @@ class PredictionService:
         existing_files = set(self.results_dir.glob("predicciones_*.csv"))
         
         try:
+            # Log del comando que se va a ejecutar
+            logger.info(f"Ejecutando comando: {' '.join(cmd)}")
+            logger.info(f"Directorio de trabajo: {self.project_root}")
+            
             # Ejecutar comando
             result = subprocess.run(
                 cmd,
@@ -160,9 +174,16 @@ class PredictionService:
                 timeout=300  # 5 minutos timeout
             )
             
+            # Log de stdout y stderr
+            if result.stdout:
+                logger.info(f"STDOUT: {result.stdout}")
+            if result.stderr:
+                logger.warning(f"STDERR: {result.stderr}")
+            
             if result.returncode != 0:
-                logger.error(f"Error en predicción: {result.stderr}")
-                raise RuntimeError(f"Error ejecutando predicción: {result.stderr}")
+                logger.error(f"Error en predicción (código {result.returncode})")
+                error_msg = result.stderr if result.stderr else result.stdout
+                raise RuntimeError(f"Error ejecutando predicción: {error_msg}")
             
             logger.info("Predicción ejecutada exitosamente")
             
@@ -197,20 +218,40 @@ class PredictionService:
         try:
             df = pd.read_csv(csv_file)
             
+            # Verificar que el DataFrame no esté vacío
+            if df.empty:
+                logger.warning(f"El archivo CSV {csv_file.name} está vacío")
+                return []
+            
+            logger.info(f"Leyendo {len(df)} predicciones del archivo {csv_file.name}")
+            logger.info(f"Columnas encontradas: {df.columns.tolist()}")
+            
             predictions = []
             for _, row in df.iterrows():
+                # Redondear demanda predicha a entero
+                demanda = int(round(float(row['prediccion_demanda'])))
+                
                 predictions.append(CoursePrediction(
                     codigo_curso=row['codigo_curso'],
-                    n_registros_historia=int(row['n_registros_historia']),
-                    cupo_maximo_promedio=float(row['cupo_maximo_promedio']),
-                    alumnos_previos_promedio=float(row['alumnos_previos_promedio']),
-                    prediccion_demanda=float(row['prediccion_demanda']),
-                    mae_si_disponible=float(row['mae_si_disponible']) if pd.notna(row['mae_si_disponible']) else None,
+                    nombre_curso=f"Curso {row['codigo_curso']}",  # Por defecto, se puede mejorar con DB
+                    n_registros_historia=int(row['n_registros_historia']) if pd.notna(row.get('n_registros_historia')) else None,
+                    cupo_maximo_promedio=float(row['cupo_maximo_promedio']) if pd.notna(row.get('cupo_maximo_promedio')) else None,
+                    alumnos_previos_promedio=float(row['alumnos_previos_promedio']) if pd.notna(row.get('alumnos_previos_promedio')) else None,
+                    prediccion_demanda=demanda,
+                    demanda_predicha=demanda,  # Alias para frontend
+                    mae_si_disponible=float(row['mae_si_disponible']) if pd.notna(row.get('mae_si_disponible')) else None,
                     modelo_usado=row['modelo_usado']
                 ))
             
+            logger.info(f"Se procesaron {len(predictions)} predicciones correctamente")
             return predictions
             
         except Exception as e:
-            logger.error(f"Error leyendo predicciones: {str(e)}")
+            logger.error(f"Error leyendo predicciones del archivo {csv_file.name}: {str(e)}")
+            logger.error(f"Contenido del archivo (primeras líneas):")
+            try:
+                with open(csv_file, 'r') as f:
+                    logger.error(f.read(500))
+            except:
+                pass
             raise RuntimeError(f"Error leyendo archivo de resultados: {str(e)}")
