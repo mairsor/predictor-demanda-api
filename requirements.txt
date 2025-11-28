@@ -44,6 +44,7 @@ python-multipart>=0.0.6     # soporte para form data y file uploads
 # Utilidades
 # ========================================
 python-dotenv>=1.0.0        # lectura de variables de entorno desde .env
+requests>=2.31.0            # cliente HTTP para healthcheck
 
 # ========================================
 # CLI (opcional pero recomendado)
