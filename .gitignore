@@ -15,8 +15,8 @@ __pycache__/
 *.so
 
 # Modelos entrenados (archivos grandes)
-models/*.pkl
-models/*.json
+# models/*.pkl  # Descomentado para permitir despliegue en servidor
+# models/*.json # Descomentado para permitir despliegue en servidor
 
 # Resultados y logs
 results/*.csv

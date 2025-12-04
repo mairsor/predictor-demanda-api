@@ -1,0 +1,10 @@
+{
+  "metrics": {
+    "MAE": 1.823913007627286,
+    "RMSE": 2.099059877176957,
+    "R2": 0.9747548449449563
+  },
+  "n_train": 28,
+  "n_test": 7,
+  "model_path": "models\\modelo_demanda_general_v20251127.pkl"
+}

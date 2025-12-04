@@ -1,0 +1,28 @@
+{
+  "model_name": "modelo_demanda_FIS201_v20251127",
+  "curso": "FIS201",
+  "date": "2025-11-27T21:56:04.914645",
+  "features": [
+    "creditos",
+    "alumnos_previos",
+    "variacion_matricula",
+    "num_prerrequisitos",
+    "tasa_aprobacion",
+    "franja_horaria",
+    "alumnos_elegibles",
+    "cupo_maximo"
+  ],
+  "metrics": {
+    "MAE": 1.7219999999999942,
+    "RMSE": 1.7219999999999942,
+    "R2": NaN
+  },
+  "n_train": 5,
+  "n_test": 1,
+  "hyperparams": {
+    "n_estimators": 300,
+    "max_depth": 12,
+    "random_state": 42
+  },
+  "config_hash": "be7ae1ca5bcc397aaa9facb727058561"
+}
