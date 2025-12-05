@@ -1,0 +1,28 @@
+{
+  "model_name": "modelo_demanda_EE522_v20251204",
+  "curso": "EE522",
+  "date": "2025-12-04T03:28:21.398033",
+  "features": [
+    "creditos",
+    "alumnos_previos",
+    "variacion_matricula",
+    "num_prerrequisitos",
+    "tasa_aprobacion",
+    "franja_horaria",
+    "alumnos_elegibles",
+    "cupo_maximo"
+  ],
+  "metrics": {
+    "MAE": 7.455444444444445,
+    "RMSE": 7.459972794773814,
+    "R2": -23.73386404389575
+  },
+  "n_train": 8,
+  "n_test": 2,
+  "hyperparams": {
+    "n_estimators": 300,
+    "max_depth": 12,
+    "random_state": 42
+  },
+  "config_hash": "be7ae1ca5bcc397aaa9facb727058561"
+}

@@ -6,7 +6,7 @@ los cursos consolidados. El modelo se guarda en la carpeta 'models/' junto con
 su metadata.
 
 Uso:
-    python -m src.modelo_general --config configs/general_model.yml --data data/matriculas_por_curso.csv
+    python -m src.modelo_general --config configs/general_model.yml --data data/matriculas_por_curso_generado.csv
 
 Autor: Sistema de Predicción de Demanda UNI
 Fecha: 2025-11-13

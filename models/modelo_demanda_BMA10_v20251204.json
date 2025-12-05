@@ -1,0 +1,28 @@
+{
+  "model_name": "modelo_demanda_BMA10_v20251204",
+  "curso": "BMA10",
+  "date": "2025-12-04T03:15:29.044544",
+  "features": [
+    "creditos",
+    "alumnos_previos",
+    "variacion_matricula",
+    "num_prerrequisitos",
+    "tasa_aprobacion",
+    "franja_horaria",
+    "alumnos_elegibles",
+    "cupo_maximo"
+  ],
+  "metrics": {
+    "MAE": 9.361875068864364,
+    "RMSE": 12.196943992840959,
+    "R2": -0.3313171187675026
+  },
+  "n_train": 48,
+  "n_test": 12,
+  "hyperparams": {
+    "n_estimators": 300,
+    "max_depth": 12,
+    "random_state": 42
+  },
+  "config_hash": "be7ae1ca5bcc397aaa9facb727058561"
+}

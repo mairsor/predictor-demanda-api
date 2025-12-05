@@ -8,8 +8,8 @@ Itera por todos los cursos en el dataset. Para cada curso:
 Genera un archivo CSV con predicciones para todos los cursos.
 
 Uso:
-    python -m src.modelo_todos --data data/matriculas_por_curso.csv --general_model models/modelo_demanda_general_latest.pkl
-    python -m src.modelo_todos --data data/matriculas_por_curso.csv --train_general
+    python -m src.modelo_todos --data data/matriculas_por_curso_generado.csv --general_model models/modelo_demanda_general_latest.pkl
+    python -m src.modelo_todos --data data/matriculas_por_curso_generado.csv --train_general
 
 Autor: Sistema de Predicción de Demanda UNI
 Fecha: 2025-11-13

@@ -5,8 +5,8 @@ Script para entrenar un modelo RandomForestRegressor específico para un curso d
 Valida que haya suficiente historia antes de entrenar.
 
 Uso:
-    python -m src.modelo_especifico --course CIB02 --data data/matriculas_por_curso.csv --config configs/ejemplo_CIB02.yml
-    python -m src.modelo_especifico --course CIB02 --data data/matriculas_por_curso.csv --force
+    python -m src.modelo_especifico --course CIB02 --data data/matriculas_por_curso_generado.csv --config configs/ejemplo_CIB02.yml
+    python -m src.modelo_especifico --course CIB02 --data data/matriculas_por_curso_generado.csv --force
 
 Autor: Sistema de Predicción de Demanda UNI
 Fecha: 2025-11-13

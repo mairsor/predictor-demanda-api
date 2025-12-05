@@ -66,7 +66,7 @@ class PredictionService:
         
         # Ejecutar predicción según scope
         if request.scope == "single":
-            result_file = self._predict_single(request.course_code, request.model_type)
+            result_file = self._predict_individual(request.course_code, request.model_type)
         elif request.scope == "multiple":
             result_file = self._predict_multiple(request.course_codes, request.model_type)
         else:  # all
@@ -95,15 +95,15 @@ class PredictionService:
             )
         )
     
-    def _predict_single(self, course_code: str, model_type: str) -> Path:
-        """Ejecuta predicción para un solo curso."""
+    def _predict_individual(self, course_code: str, model_type: str) -> Path:
+        """Ejecuta predicción para un curso específico."""
         logger.info(f"Predicción individual: {course_code} con modelo {model_type}")
         
         # Usar Python directamente en lugar del script bash
         cmd = [
             str(self.python_exe),
             "-m", "src.modelo_todos",
-            "--data", "data/matriculas_por_curso.csv",
+            "--data", "data/matriculas_por_curso_generado.csv",
             "--general_model", "models/modelo_demanda_general_v20251113.pkl",
             "--config", "configs/general_model.yml",
             "--model_type", model_type,
@@ -120,7 +120,7 @@ class PredictionService:
         cmd = [
             str(self.python_exe),
             "-m", "src.modelo_todos",
-            "--data", "data/matriculas_por_curso.csv",
+            "--data", "data/matriculas_por_curso_generado.csv",
             "--general_model", "models/modelo_demanda_general_v20251113.pkl",
             "--config", "configs/general_model.yml",
             "--model_type", model_type,
@@ -136,7 +136,7 @@ class PredictionService:
         cmd = [
             str(self.python_exe),
             "-m", "src.modelo_todos",
-            "--data", "data/matriculas_por_curso.csv",
+            "--data", "data/matriculas_por_curso_generado.csv",
             "--general_model", "models/modelo_demanda_general_v20251113.pkl",
             "--config", "configs/general_model.yml",
             "--model_type", model_type
